@@ -8,26 +8,26 @@ from db import db
 app = Flask(__name__)
 
 
-# Part 1: App test - Does not use the test
+# Part 1: App test - Does not use the database
 @app.route("/")
 def flask_mongodb_atlas():
     return "Flask App created and running"
 
 
-# Part 2: Test API (send/put) - Insert random data
+# Part 2: Test API - Insert random hard-coded data to test connection to database
 @app.route("/test")
 def test():
     db.collection.insert_one({"name": "Jay"})
     return "Connected to the database!"
 
 
-# Part 3: Return all to make sure reader works right
+# Part 3: API to return all recipes currently stored in the database
 @app.route("/get-all")
 def get_all():
     # Collect all the data from the database
     all = db.collection.find()
 
-    # For each document, convert object id to string type so it can be comprehensible by the compiler
+    # For each document, convert _id from type ObjectId to string so it can be JSON serializable
     data = []
     for doc in all:
         doc["_id"] = str(doc["_id"])
@@ -37,7 +37,7 @@ def get_all():
     return jsonify(data)
 
 
-# API to insert one record into the DB
+# Part 4: API to insert one recipe into the database
 @app.route("/insert-one", methods=["POST"])
 def insert_one():
     input_json = request.get_json()
@@ -50,13 +50,13 @@ def insert_one():
     }
     db.collection.insert_one(dict_to_return)
     # the above call mutates dict_to_return to include the ID of the new entry
-    # in the DB. the ID object can't be parsed by the browser, so we convert
-    # it to a string
+    # in the DB. Data of ObjectID type can't be parsed by the browser, so we 
+    # convert it to a string
     dict_to_return["_id"] = str(dict_to_return["_id"])
     return dict_to_return
 
 
-# API to remove a recipe from the database using the recipe's name
+# Part 5: API to remove one recipe from the database using the recipe's ID
 # e.g. body might be {"_id": "63089f6c32adbaebfa6e8d06"}
 @app.route("/remove-one", methods=["DELETE"])
 def remove_one():
